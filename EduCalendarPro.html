@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Học Pro 2025-2026</title>
+    <!-- Tailwind CSS cho Giao diện UI/UX -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome cho Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' },
+                        exam: '#ef4444', // Đỏ cho thi
+                        event: '#8b5cf6', // Tím cho sự kiện
+                        holiday: '#10b981' // Xanh lá cho nghỉ
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        /* Smooth Transitions */
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
+        .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+        
+        /* Modal Animation */
+        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* Circular Progress CSS */
+        .circular-chart { display: block; margin: 0 auto; max-width: 120px; max-height: 120px; }
+        .circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 3.8; }
+        .dark .circle-bg { stroke: #334155; }
+        .circle { fill: none; stroke-width: 2.8; stroke-linecap: round; animation: progress 1s ease-out forwards; }
+        @keyframes progress { 0% { stroke-dasharray: 0 100; } }
+        .percentage { fill: #334155; font-size: 0.5em; text-anchor: middle; font-weight: bold; }
+        .dark .percentage { fill: #f8fafc; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-40 w-full backdrop-blur-md bg-white/70 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="bg-brand-500 text-white p-2 rounded-lg"><i class="fa-solid fa-graduation-cap text-xl"></i></div>
+                    <span class="font-bold text-xl tracking-tight">EduCalendar<span class="text-brand-500">Pro</span></span>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="scrollToCurrent()" class="hidden md:flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 rounded-lg hover:bg-brand-100 dark:hover:bg-brand-900/50 transition font-medium text-sm">
+                        <i class="fa-solid fa-location-crosshairs"></i> Tới Hôm Nay
+                    </button>
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+                        <i id="theme-icon" class="fa-solid fa-moon text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <div class="relative group">
+                        <button class="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+                            <i class="fa-solid fa-ellipsis-vertical px-2 text-gray-600 dark:text-gray-300"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="p-1">
+                                <button onclick="exportData()" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><i class="fa-solid fa-download w-5"></i> Sao lưu dữ liệu</button>
+                                <label class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer block">
+                                    <i class="fa-solid fa-upload w-5"></i> Phục hồi dữ liệu
+                                    <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
+                                </label>
+                                <hr class="my-1 border-gray-200 dark:border-gray-700">
+                                <button onclick="resetData()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"><i class="fa-solid fa-trash w-5"></i> Xóa toàn bộ cài đặt</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Dashboard Widgets -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <!-- Widget 1: Progress -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Tiến Độ Năm Học</h3>
+                    <div class="text-3xl font-bold text-gray-800 dark:text-white mb-2" id="weeks-passed-text">--/35 Tuần</div>
+                    <div class="text-sm font-medium text-brand-500 bg-brand-50 dark:bg-brand-900/30 inline-block px-2 py-1 rounded-md" id="current-status-badge">Đang tải...</div>
+                </div>
+                <div class="w-24 h-24">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="circle" id="progress-circle" stroke="#3b82f6" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <text x="18" y="20.35" class="percentage" id="progress-percentage">0%</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Widget 2: Countdown -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 col-span-1 md:col-span-2 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 text-brand-50 dark:text-gray-700/50 opacity-50 z-0">
+                    <i class="fa-solid fa-hourglass-half text-9xl"></i>
+                </div>
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between h-full gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mục Tiêu Đếm Ngược</h3>
+                            <i class="fa-solid fa-fire text-orange-500"></i>
+                        </div>
+                        <select id="countdown-target" onchange="updateCountdown()" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                            <!-- Options generated by JS -->
+                        </select>
+                    </div>
+                    <div class="flex gap-2 sm:gap-4 text-center">
+                        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 min-w-[70px] border border-gray-100 dark:border-gray-700">
+                            <div class="text-2xl sm:text-3xl font-bold text-brand-600 dark:text-brand-400" id="cd-days">00</div>
+                            <div class="text-xs text-gray-500 mt-1 uppercase">Ngày</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 min-w-[70px] border border-gray-100 dark:border-gray-700">
+                            <div class="text-2xl sm:text-3xl font-bold text-gray-700 dark:text-gray-300" id="cd-hours">00</div>
+                            <div class="text-xs text-gray-500 mt-1 uppercase">Giờ</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 min-w-[70px] border border-gray-100 dark:border-gray-700">
+                            <div class="text-2xl sm:text-3xl font-bold text-gray-700 dark:text-gray-300" id="cd-mins">00</div>
+                            <div class="text-xs text-gray-500 mt-1 uppercase">Phút</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 min-w-[70px] border border-gray-100 dark:border-gray-700">
+                            <div class="text-2xl sm:text-3xl font-bold text-gray-700 dark:text-gray-300" id="cd-secs">00</div>
+                            <div class="text-xs text-gray-500 mt-1 uppercase">Giây</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex flex-wrap gap-2 mb-6 border-b border-gray-200 dark:border-gray-800 pb-4">
+            <button onclick="filterGrid('all')" class="px-4 py-1.5 rounded-full text-sm font-medium bg-gray-800 text-white dark:bg-white dark:text-gray-900 transition">Tất cả</button>
+            <button onclick="filterGrid('exam')" class="px-4 py-1.5 rounded-full text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-red-500 transition"><i class="fa-solid fa-pen-clip mr-1"></i> Có bài thi</button>
+            <button onclick="filterGrid('holiday')" class="px-4 py-1.5 rounded-full text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-green-500 transition"><i class="fa-solid fa-plane text-sm mr-1"></i> Nghỉ lễ</button>
+            <button onclick="filterGrid('event')" class="px-4 py-1.5 rounded-full text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-purple-500 transition"><i class="fa-solid fa-star text-sm mr-1"></i> Sự kiện</button>
+        </div>
+
+        <!-- Semester 1 Grid -->
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-book-open text-brand-500"></i> HỌC KỲ I</h2>
+        <div id="grid-sem-1" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-10">
+            <!-- Rendered by JS -->
+        </div>
+
+        <!-- Semester 2 Grid -->
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 mt-8"><i class="fa-solid fa-book-open-reader text-brand-500"></i> HỌC KỲ II</h2>
+        <div id="grid-sem-2" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-10">
+            <!-- Rendered by JS -->
+        </div>
+    </main>
+
+    <!-- Modal Form Detail -->
+    <div id="detail-modal" class="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm hidden flex justify-center items-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-md mx-4 rounded-2xl shadow-2xl modal-enter overflow-hidden flex flex-col max-h-[90vh]">
+            <div id="modal-header" class="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-start text-white bg-brand-600">
+                <div>
+                    <h2 id="modal-title" class="text-2xl font-bold">Tuần X</h2>
+                    <p id="modal-date" class="text-sm opacity-80 mt-1">dd/mm - dd/mm</p>
+                </div>
+                <button onclick="closeModal()" class="text-white hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-5 overflow-y-auto flex-1">
+                <input type="hidden" id="modal-week-id">
+                
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Phân loại tuần này</label>
+                    <select id="modal-type" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 outline-none focus:border-brand-500">
+                        <option value="normal">📚 Học bình thường</option>
+                        <option value="midterm">⚠️ Thi Giữa Kỳ</option>
+                        <option value="final">🚨 Thi Cuối Kỳ</option>
+                        <option value="event">✨ Sự kiện đặc biệt</option>
+                        <option value="holiday">✈️ Nghỉ lễ</option>
+                    </select>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nhiệm vụ trong tuần (To-Do)</label>
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="new-task-input" placeholder="Thêm công việc mới..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 outline-none focus:border-brand-500" onkeypress="if(event.key === 'Enter') addTask()">
+                        <button onclick="addTask()" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg transition"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <ul id="task-list" class="space-y-2">
+                        <!-- Tasks rendered here -->
+                    </ul>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Ghi chú thêm</label>
+                    <textarea id="modal-note" rows="3" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 outline-none focus:border-brand-500" placeholder="Kế hoạch ôn tập, dặn dò..."></textarea>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-5 py-2 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">Hủy</button>
+                <button onclick="saveModalData()" class="px-5 py-2 rounded-lg font-medium bg-brand-600 text-white hover:bg-brand-700 transition shadow-md">Lưu Thay Đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA INITIALIZATION ---
+        const schedule = [];
+        let currentDate = new Date(2025, 8, 8); // 08/09/2025
+
+        function addWeeks(count, startWeekNum, term) {
+            for(let i=0; i<count; i++) {
+                let start = new Date(currentDate);
+                let end = new Date(currentDate);
+                end.setDate(end.getDate() + 6); end.setHours(23, 59, 59);
+                schedule.push({ id: `w${startWeekNum+i}`, title: `Tuần ${startWeekNum+i}`, start, end, isBreak: false, term });
+                currentDate.setDate(currentDate.getDate() + 7);
+            }
+        }
+
+        // Tạo dữ liệu chuẩn
+        addWeeks(18, 1, 1); // Kì 1
+        
+        // Nghỉ giữa kỳ
+        let endBreak1 = new Date(currentDate); endBreak1.setDate(endBreak1.getDate() + 6); endBreak1.setHours(23, 59, 59);
+        schedule.push({ id: `break1`, title: `Nghỉ Hết Kì 1`, start: new Date(currentDate), end: endBreak1, isBreak: true, term: 1 });
+        currentDate.setDate(currentDate.getDate() + 7);
+
+        addWeeks(3, 19, 2); // Kì 2 đầu
+        
+        // Nghỉ tết
+        let endTet = new Date(currentDate); endTet.setDate(endTet.getDate() + 13); endTet.setHours(23, 59, 59);
+        schedule.push({ id: `tet`, title: `Tết Nguyên Đán`, start: new Date(currentDate), end: endTet, isBreak: true, term: 2 });
+        currentDate.setDate(currentDate.getDate() + 14);
+
+        addWeeks(14, 22, 2); // Kì 2 cuối
+
+        // Trạng thái user
+        let userData = JSON.parse(localStorage.getItem('eduProData')) || {};
+        // Migrate dữ liệu cũ (nếu có) để tương thích với cấu trúc task mới
+        schedule.forEach(item => {
+            if (!userData[item.id]) {
+                let defaultType = item.isBreak ? 'holiday' : 'normal';
+                userData[item.id] = { type: defaultType, note: '', tasks: [] };
+            }
+            if(!userData[item.id].tasks) userData[item.id].tasks = [];
+        });
+
+        // --- CORE FUNCTIONS ---
+        function saveData() { localStorage.setItem('eduProData', JSON.stringify(userData)); }
+        function formatDate(d) { return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}`; }
+        function formatFullDate(d) { return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`; }
+
+        function renderGrid(filter = 'all') {
+            const grid1 = document.getElementById('grid-sem-1');
+            const grid2 = document.getElementById('grid-sem-2');
+            const countdownSelect = document.getElementById('countdown-target');
+            const now = new Date();
+            
+            grid1.innerHTML = ''; grid2.innerHTML = '';
+            let optionsHtml = '';
+            let academicWeeksPassed = 0;
+            let currentItem = null;
+
+            schedule.forEach((item) => {
+                const data = userData[item.id];
+                const isPassed = now > item.end;
+                const isCurrent = now >= item.start && now <= item.end;
+                
+                if (!item.isBreak && isPassed) academicWeeksPassed++;
+                if (isCurrent) currentItem = item;
+
+                // Lọc dữ liệu
+                if (filter !== 'all') {
+                    if (filter === 'exam' && !['midterm', 'final'].includes(data.type)) return;
+                    if (filter === 'holiday' && data.type !== 'holiday') return;
+                    if (filter === 'event' && data.type !== 'event') return;
+                }
+
+                // Giao diện thẻ
+                let stateClass = "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-100";
+                let headerColor = "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300";
+                let iconHtml = "";
+
+                if (isPassed) {
+                    stateClass = "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-800 opacity-60";
+                    headerColor = "bg-gray-200 dark:bg-gray-800 text-gray-500";
+                }
+
+                if (isCurrent) {
+                    stateClass = "bg-brand-50 dark:bg-brand-900/20 border-brand-400 dark:border-brand-500 shadow-md ring-1 ring-brand-500";
+                    headerColor = "bg-brand-500 text-white";
+                }
+
+                // Tùy chỉnh theo Tag (Ghi đè màu nếu sự kiện đặc biệt, trừ khi đã qua thì cho mờ đi một chút)
+                if (data.type === 'midterm' || data.type === 'final') {
+                    if(!isPassed || isCurrent) {
+                        stateClass = isCurrent ? stateClass : "bg-red-50 dark:bg-red-900/10 border-red-300 dark:border-red-800";
+                        headerColor = "bg-red-500 text-white";
+                    }
+                    iconHtml = '<i class="fa-solid fa-triangle-exclamation text-red-500 text-xs bg-white rounded-full p-1 absolute -top-2 -right-2 shadow"></i>';
+                } else if (data.type === 'holiday') {
+                    headerColor = isPassed ? headerColor : "bg-green-500 text-white";
+                    iconHtml = '<i class="fa-solid fa-mug-hot text-green-500 text-xs bg-white rounded-full p-1 absolute -top-2 -right-2 shadow"></i>';
+                } else if (data.type === 'event') {
+                    headerColor = isPassed ? headerColor : "bg-purple-500 text-white";
+                    iconHtml = '<i class="fa-solid fa-star text-purple-500 text-xs bg-white rounded-full p-1 absolute -top-2 -right-2 shadow"></i>';
+                }
+
+                // Đếm số task hoàn thành
+                const completedTasks = data.tasks.filter(t => t.done).length;
+                const totalTasks = data.tasks.length;
+                let taskBadge = totalTasks > 0 ? 
+                    `<div class="text-xs text-gray-500 mt-2 flex items-center gap-1"><i class="fa-regular fa-square-check"></i> ${completedTasks}/${totalTasks} task</div>` : '';
+                
+                let notePreview = data.note ? `<p class="text-xs text-gray-500 mt-2 truncate italic border-l-2 border-gray-300 pl-2">${data.note}</p>` : '';
+
+                const cardHtml = `
+                    <div id="card-${item.id}" onclick="openModal('${item.id}')" class="rounded-xl border cursor-pointer card-hover relative flex flex-col h-full ${stateClass}">
+                        ${iconHtml}
+                        <div class="px-3 py-2 rounded-t-xl text-sm font-bold flex justify-between items-center ${headerColor}">
+                            <span>${item.title}</span>
+                            ${isCurrent ? '<span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>' : ''}
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-center items-center text-center">
+                            <div class="text-xl font-black font-mono tracking-tighter text-gray-800 dark:text-gray-100">
+                                ${formatDate(item.start)} <span class="text-gray-300 dark:text-gray-600 font-normal mx-1">→</span> ${formatDate(item.end)}
+                            </div>
+                            ${taskBadge}
+                            ${notePreview}
+                        </div>
+                    </div>
+                `;
+
+                if (item.term === 1) grid1.innerHTML += cardHtml;
+                else grid2.innerHTML += cardHtml;
+
+                // Cập nhật Countdown Dropdown (ưu tiên chọn các mốc thi/sự kiện chưa tới)
+                if (!isPassed || isCurrent) {
+                    let label = item.title;
+                    if(data.type === 'midterm') label += " (Thi Giữa Kỳ)";
+                    if(data.type === 'final') label += " (Thi Cuối Kỳ)";
+                    if(data.type === 'holiday') label += " (Nghỉ lễ)";
+                    optionsHtml += `<option value="${item.id}" ${data.type.includes('term') ? 'class="font-bold text-red-500"' : ''}>Mốc: ${label} - ${formatFullDate(item.start)}</option>`;
+                }
+            });
+
+            // Nếu không có dữ liệu do lọc
+            if(grid1.innerHTML === '') grid1.innerHTML = '<p class="text-gray-500 italic col-span-full">Không có dữ liệu phù hợp trong kỳ này.</p>';
+            if(grid2.innerHTML === '') grid2.innerHTML = '<p class="text-gray-500 italic col-span-full">Không có dữ liệu phù hợp trong kỳ này.</p>';
+
+            // Cập nhật Select
+            const currentVal = countdownSelect.value;
+            countdownSelect.innerHTML = optionsHtml;
+            if (currentVal && countdownSelect.querySelector(`option[value="${currentVal}"]`)) {
+                countdownSelect.value = currentVal;
+            } else if (countdownSelect.options.length > 0) {
+                 // Tự động tìm mốc thi tiếp theo
+                 const nextExam = Array.from(countdownSelect.options).find(opt => opt.text.includes('Thi'));
+                 if(nextExam) countdownSelect.value = nextExam.value;
+            }
+
+            // Cập nhật Progress
+            const totalAcademic = 35;
+            document.getElementById('weeks-passed-text').innerText = `${academicWeeksPassed}/${totalAcademic} Tuần`;
+            const percent = Math.min(100, Math.round((academicWeeksPassed / totalAcademic) * 100));
+            document.getElementById('progress-percentage').textContent = `${percent}%`;
+            document.getElementById('progress-circle').style.strokeDasharray = `${percent}, 100`;
+
+            if(currentItem) {
+                document.getElementById('current-status-badge').innerHTML = `<i class="fa-solid fa-bolt text-yellow-500"></i> Hôm nay: ${currentItem.title}`;
+            } else if (now > schedule[schedule.length-1].end) {
+                document.getElementById('current-status-badge').innerHTML = `Đã nghỉ hè! 🏖️`;
+                countdownSelect.innerHTML = `<option value="">Không có sự kiện</option>`;
+            }
+
+            updateCountdown();
+        }
+
+        function filterGrid(type) {
+            renderGrid(type);
+        }
+
+        // --- MODAL & TASKS LOGIC ---
+        let currentEditingId = null;
+
+        function openModal(id) {
+            currentEditingId = id;
+            const item = schedule.find(s => s.id === id);
+            const data = userData[id];
+            
+            document.getElementById('modal-title').innerText = item.title;
+            document.getElementById('modal-date').innerText = `${formatFullDate(item.start)} đến ${formatFullDate(item.end)}`;
+            document.getElementById('modal-type').value = data.type;
+            document.getElementById('modal-note').value = data.note;
+            
+            // Set header color based on type temporarily
+            const header = document.getElementById('modal-header');
+            header.className = `p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-start text-white transition-colors duration-300`;
+            if(['midterm', 'final'].includes(data.type)) header.classList.add('bg-red-500');
+            else if(data.type === 'holiday') header.classList.add('bg-green-500');
+            else if(data.type === 'event') header.classList.add('bg-purple-500');
+            else header.classList.add('bg-brand-600');
+
+            renderTasksList();
+            
+            const modal = document.getElementById('detail-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('detail-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        function renderTasksList() {
+            const list = document.getElementById('task-list');
+            const tasks = userData[currentEditingId].tasks;
+            list.innerHTML = '';
+            
+            if(tasks.length === 0) {
+                list.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-2">Chưa có công việc nào.</p>';
+                return;
+            }
+
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = `flex items-center justify-between p-2 rounded bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 ${task.done ? 'opacity-60' : ''}`;
+                li.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                        <input type="checkbox" class="w-4 h-4 text-brand-600 rounded cursor-pointer" ${task.done ? 'checked' : ''} onchange="toggleTask(${index})">
+                        <span class="text-sm truncate ${task.done ? 'line-through text-gray-500' : 'text-gray-700 dark:text-gray-200'}">${task.text}</span>
+                    </div>
+                    <button onclick="deleteTask(${index})" class="text-gray-400 hover:text-red-500 px-2 transition"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function addTask() {
+            const input = document.getElementById('new-task-input');
+            const text = input.value.trim();
+            if(text) {
+                userData[currentEditingId].tasks.push({ text, done: false });
+                input.value = '';
+                renderTasksList();
+            }
+        }
+
+        function toggleTask(index) {
+            userData[currentEditingId].tasks[index].done = !userData[currentEditingId].tasks[index].done;
+            renderTasksList();
+        }
+
+        function deleteTask(index) {
+            userData[currentEditingId].tasks.splice(index, 1);
+            renderTasksList();
+        }
+
+        function saveModalData() {
+            userData[currentEditingId].type = document.getElementById('modal-type').value;
+            userData[currentEditingId].note = document.getElementById('modal-note').value;
+            saveData();
+            closeModal();
+            renderGrid(); // Cập nhật lại UI ngoài màn hình chính
+        }
+
+        // Change modal header color real-time when selecting type
+        document.getElementById('modal-type').addEventListener('change', function(e) {
+            const header = document.getElementById('modal-header');
+            header.className = `p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-start text-white transition-colors duration-300`;
+            if(['midterm', 'final'].includes(e.target.value)) header.classList.add('bg-red-500');
+            else if(e.target.value === 'holiday') header.classList.add('bg-green-500');
+            else if(e.target.value === 'event') header.classList.add('bg-purple-500');
+            else header.classList.add('bg-brand-600');
+        });
+
+        // --- COUNTDOWN LOGIC ---
+        let countdownInterval;
+        function updateCountdown() {
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                const targetId = document.getElementById('countdown-target').value;
+                if (!targetId) return;
+                
+                const targetItem = schedule.find(s => s.id === targetId);
+                // Đếm ngược đến 00:00:00 ngày bắt đầu tuần đó
+                const targetTime = new Date(targetItem.start);
+                targetTime.setHours(0,0,0,0);
+                const now = new Date().getTime();
+                const distance = targetTime.getTime() - now;
+
+                if (distance < 0) {
+                    document.getElementById('cd-days').innerText = "00";
+                    document.getElementById('cd-hours').innerText = "00";
+                    document.getElementById('cd-mins').innerText = "00";
+                    document.getElementById('cd-secs').innerText = "00";
+                    return;
+                }
+
+                document.getElementById('cd-days').innerText = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2,'0');
+                document.getElementById('cd-hours').innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2,'0');
+                document.getElementById('cd-mins').innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2,'0');
+                document.getElementById('cd-secs').innerText = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2,'0');
+            }, 1000);
+        }
+
+        // --- UTILS ---
+        function scrollToCurrent() {
+            const now = new Date();
+            const currentItem = schedule.find(item => now >= item.start && now <= item.end);
+            if(currentItem) {
+                const el = document.getElementById(`card-${currentItem.id}`);
+                if(el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Thêm hiệu ứng nháy sáng
+                    el.classList.add('ring-4', 'ring-brand-400', 'ring-offset-2', 'dark:ring-offset-gray-900');
+                    setTimeout(() => el.classList.remove('ring-4', 'ring-brand-400', 'ring-offset-2', 'dark:ring-offset-gray-900'), 1500);
+                }
+            } else {
+                alert('Ngoài khoảng thời gian năm học!');
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.className = 'fa-solid fa-moon text-gray-600';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-sun text-yellow-400';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userData));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "LichHoc_Backup.json");
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    userData = imported;
+                    saveData();
+                    renderGrid();
+                    alert("Phục hồi dữ liệu thành công!");
+                } catch(err) {
+                    alert("File không hợp lệ!");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetData() {
+            if(confirm("Bạn có chắc chắn muốn xóa toàn bộ ghi chú và cài đặt? Không thể hoàn tác!")) {
+                localStorage.removeItem('eduProData');
+                location.reload();
+            }
+        }
+
+        // Đóng modal khi click ra ngoài
+        document.getElementById('detail-modal').addEventListener('click', function(e) {
+            if(e.target === this) closeModal();
+        });
+
+        // Init
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').className = 'fa-solid fa-sun text-yellow-400';
+        }
+        
+        renderGrid();
+        
+        // Auto check current week change every hour
+        setInterval(() => renderGrid(), 3600000);
+    </script>
+</body>
+</html>
